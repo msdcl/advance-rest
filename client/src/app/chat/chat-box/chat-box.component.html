@@ -1,0 +1,66 @@
+
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <a class="navbar-brand text-white">
+                {{userInfo.firstName}} {{userInfo.lastName}}
+                <i class="fa fa-circle online" *ngIf="disconnectedSocket == false"></i>
+                <i class="fa fa-circle offline" *ngIf="disconnectedSocket == true"></i>
+              </a>
+             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                 <span class="navbar-toggler-icon"></span>
+             </button>
+             <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+                 <ul class="navbar-nav">
+                     
+                     <li class="nav-item">
+                         <button type="button" class="btn btn-info" (click)="logout()"><b>logout</b></button>
+                       
+                     </li>
+                 </ul>
+             </div>
+         </nav>
+   
+ 
+  <div class="container-fluid">
+  <div class="row">
+      <div class="col-sm-12">
+          <span style="color:white">Enter name of chat room :</span><br>
+          <input style="width:60%" type="text" id="chatRoom" [(ngModel)]="chatRoomName" name="chatRoomName">
+          <button id="send" style="width:10em" (click)="createNewChatRoom()" >create chatRoom</button>
+      </div>
+    
+  </div>
+  <div class="row " >
+    <b style="color:white; margin-left: 1%"> Active chat rooms :</b> <br>
+    <div class="col-sm-12 chatRooms" *ngIf="allChatRoom?.length >0">
+      <div class="chatRooms" *ngFor="let room of allChatRoom" class="row">
+          <p  class="col-sm-2" style="color :white" >{{room.name}}</p>
+          <span  class="col-sm-2"> <button id="join" class="btn btn-primary" style="margin-left: 2%" (click)="joinChatRoom(room.name)" >Join</button></span>
+          <span *ngIf="room.createdBy===receiverId" class="col-sm-2"> <button id="delete" class="btn btn-primary" style="margin-left: 2%" (click)="deleteChatRoom(room.name)" >delete</button></span>
+          <span *ngIf="room.createdBy===receiverId" class="col-sm-2"> <button type="button" class="btn btn-primary"  style="margin-left: 2%" data-toggle="modal" data-target="#exampleModal" (click)="nameOfChatRoomToEdit(room.name)">
+            edit
+          </button></span><br>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit chat room name : </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <label for="message-text" class="col-form-label">New name</label>
+          <textarea class="form-control" id="message-text" [(ngModel)]="chatRoomEditedName"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary"(click)="editChatRoom()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
