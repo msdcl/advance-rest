@@ -12,6 +12,7 @@ const globalErrorMiddleware = require('./app/middlewares/appErrorHandler');
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const morgan = require('morgan');
+var cors = require('cors')
 
 
 app.use(morgan('dev'));
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(routeLoggerMiddleware.logIp);
 app.use(globalErrorMiddleware.globalErrorHandler);
+app.use(cors());
 
 
 app.use(express.static(path.join(__dirname, 'client')));
