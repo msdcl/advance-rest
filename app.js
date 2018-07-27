@@ -12,7 +12,9 @@ const globalErrorMiddleware = require('./app/middlewares/appErrorHandler');
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const morgan = require('morgan');
-var cors = require('cors')
+
+const cors = require('cors');
+
 
 
 app.use(morgan('dev'));

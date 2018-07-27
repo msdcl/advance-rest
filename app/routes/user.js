@@ -10,7 +10,11 @@ module.exports.setRouter = (app) => {
     // defining routes.
      
 
-     /**
+    
+
+    // params: firstName, lastName, email, mobileNumber, password
+    app.post(`${baseUrl}/signup`, userController.signUpFunction);
+    /**
      * @apiGroup users
      * @apiVersion  1.0.0
      * @api {post} /api/v1/signup api for user login.
@@ -42,11 +46,11 @@ module.exports.setRouter = (app) => {
 
         }
     */
+   
 
-    // params: firstName, lastName, email, mobileNumber, password
-    app.post(`${baseUrl}/signup`, userController.signUpFunction);
-
-    /**
+    // params: email, password.
+    app.post(`${baseUrl}/login`, userController.loginFunction);
+     /**
      * @apiGroup users
      * @apiVersion  1.0.0
      * @api {post} /api/v1/login api for user login.
@@ -73,11 +77,11 @@ module.exports.setRouter = (app) => {
 
         }
     */
+   
 
-    // params: email, password.
-    app.post(`${baseUrl}/login`, userController.loginFunction);
-
-    /**
+    // auth token params: userId.
+    app.post(`${baseUrl}/logout`, userController.logout);
+     /**
      * @apiGroup users
      * @apiVersion  1.0.0
      * @api {post} /api/v1/logout to logout user.
@@ -95,8 +99,5 @@ module.exports.setRouter = (app) => {
 
         }
     */
-
-    // auth token params: userId.
-    app.post(`${baseUrl}/logout`, userController.logout);
 
 }

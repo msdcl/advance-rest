@@ -126,7 +126,7 @@ let loginFunction = (req, res) => {
                         reject(apiResponse)
                     } else if (check.isEmpty(userDetails)) {
                         logger.error('No User Found', 'userController: findUser()', 7)
-                        let apiResponse = response.generate(true, 'No User Details Found', 404, null)
+                        let apiResponse = response.generate(true, 'user does not exist', 401, null)
                         reject(apiResponse)
                     } else {
                         logger.info('User Found', 'userController: findUser()', 10)
@@ -195,7 +195,7 @@ let loginFunction = (req, res) => {
         .catch((err) => {
             console.log("errorhandler");
             console.log(err);
-          // res.status(err.status)
+          //  res.status(err.status)
             res.send(err)
         })
 }

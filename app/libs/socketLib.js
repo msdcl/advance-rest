@@ -29,7 +29,7 @@ let setServer = (server) => {
     myIo.on('connection', (socket) => {
         socket.removeAllListeners();
         console.log("on connection--emitting verify user");
-
+        let isConnected = true;
         socket.emit("verifyUser", "");
 
         // code to verify the user and make him online
@@ -101,55 +101,50 @@ let setServer = (server) => {
             console.log("user is disconnected ....");
             // console.log(socket.connectorName);
             console.log(socket.userId);
+            this.isConnected = false;
+            setTimeout(function () {
+                if (this.isConnected == false) {
+                    if (socket.userId) {
+                        redisLib.deleteUserFromHash('onlineUsers2', socket.userId)
+                        console.log("delete user");
+                        redisLib.deleteUserFromChatRoomHash('currentChatRoom3', socket.nickName)
+                        console.log("delete user from chat room");
+                        redisLib.getAllUsersInAHash('onlineUsers2', (err, result) => {
+                            if (err) {
+                                console.log(err)
+                            } else {
+                                socket.leave(socket.room)
+                                socket.to(socket.room).broadcast.emit('online-user-list', result);
 
 
-            // var removeIndex = allOnlineUsers.map(function (user) { return user.userId; }).indexOf(socket.userId);
-            // allOnlineUsers.splice(removeIndex, 1)
-            // console.log(allOnlineUsers)
+                            }
+                        })
 
-            if (socket.userId) {
-                redisLib.deleteUserFromHash('onlineUsers2', socket.userId)
-                console.log("delete user");
-                redisLib.deleteUserFromChatRoomHash('currentChatRoom2',socket.nickName)
-                console.log("delete user from chat room");
-                redisLib.getAllUsersInAHash('onlineUsers2', (err, result) => {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        socket.leave(socket.room)
-                        socket.to(socket.room).broadcast.emit('online-user-list', result);
+                        redisLib.getAllUserFromChatRoomInHash('currentChatRoom3', (err, result2) => {
+                            console.log(`--- inside get user from current chat room function ---`)
+                            if (err) {
+                                console.log(err)
+                            } else {
+
+                                console.log(result2)
+
+                                io.sockets.emit('all-users-in-paricular-chat-room', result2);
 
 
+                            }
+                        })
                     }
-                })
+                }
+            }, 10000);
 
-                redisLib.getAllUserFromChatRoomInHash('currentChatRoom2', (err, result2) => {
-                    console.log(`--- inside get user from current chat room function ---`)
-                    if (err) {
-                        console.log(err)
-                    } else {
 
-                        console.log(result2)
-                        // setting room name
-                        // socket.room = 'edChat'
-                        // joining chat-group room.
-                        // socket.join(socket.room)
-                       // socket.leave(socket.room)
-            // socket.emit('all-users-in-paricular-chat-room', result2);
-                       io.sockets.emit('all-users-in-paricular-chat-room',result2);
-                       // socket.emit('all-users-in-paricular-chat-room', result2);
-                        // myIo.emit('all-chat-rooms',result2);
-
-                    }
-                })
-            }
         }) // end of on disconnect
 
 
         socket.on('chat-msg', (data) => {
             console.log("socket chat-msg called")
             data['chatId'] = shortid.generate()
-           
+
 
             // event to save chat.
             setTimeout(function () {
@@ -158,8 +153,8 @@ let setServer = (server) => {
 
             }, 2000)
             console.log(data);
-         io.sockets.emit(data.receiverName, data)
-          // socket.to(socket.room).broadcast.emit(data.receiverName, data);
+            io.sockets.emit(data.receiverName, data)
+            // socket.to(socket.room).broadcast.emit(data.receiverName, data);
 
         });
 
@@ -177,13 +172,13 @@ let setServer = (server) => {
             let key = data.name
             let value = data.createdBy
 
-            let setUserOnline = redisLib.setChatRoomInHash("chatRooms2", key, value, (err, result1) => {
+            let setUserOnline = redisLib.setChatRoomInHash("chatRooms3", key, value, (err, result1) => {
                 if (err) {
                     console.log(`some error occurred`)
                 } else {
                     // getting online users list.
 
-                    redisLib.getChatRoomFromHash('chatRooms2', (err, result2) => {
+                    redisLib.getChatRoomFromHash('chatRooms3', (err, result2) => {
                         console.log(`--- inside getAllChatRoomInAHash function ---`)
                         if (err) {
                             console.log(err)
@@ -195,10 +190,10 @@ let setServer = (server) => {
                             // socket.room = 'edChat'
                             // joining chat-group room.
                             // socket.join(socket.room)
-                    //  socket.emit('all-chat-rooms', result2);
+                            //  socket.emit('all-chat-rooms', result2);
 
-                    io.sockets.emit('all-chat-rooms',result2);
-                                               // myIo.emit('all-chat-rooms',result2);
+                            io.sockets.emit('all-chat-rooms', result2);
+                            // myIo.emit('all-chat-rooms',result2);
 
                         }
                     })
@@ -216,7 +211,7 @@ let setServer = (server) => {
         socket.on('existing-chat-rooms', (data) => {
             console.log("existing-chat-rooms event listened")
 
-            redisLib.getChatRoomFromHash('chatRooms2', (err, result2) => {
+            redisLib.getChatRoomFromHash('chatRooms3', (err, result2) => {
                 console.log(`--- inside getAllChatRoomInAHash function ---`)
                 if (err) {
                     console.log(err)
@@ -233,11 +228,11 @@ let setServer = (server) => {
 
         socket.on('delete-chat-room', (data) => {
 
-            redisLib.deleteChatRoomFromHash('chatRooms2', data, (err, result) => {
+            redisLib.deleteChatRoomFromHash('chatRooms3', data, (err, result) => {
                 if (err) {
                     console.log("Error while deleteing chat room");
                 } else {
-                    redisLib.getChatRoomFromHash('chatRooms2', (err, result2) => {
+                    redisLib.getChatRoomFromHash('chatRooms3', (err, result2) => {
                         console.log(`--- inside getAllChatRoomInAHash function ---`)
                         if (err) {
                             console.log(err)
@@ -246,8 +241,8 @@ let setServer = (server) => {
                             // socket.room = 'edChat'
                             // joining chat-group room.
                             // socket.join(socket.room)
-                //  socket.emit('all-chat-rooms', result2);
-                io.sockets.emit('all-chat-rooms',result2);
+                            //  socket.emit('all-chat-rooms', result2);
+                            io.sockets.emit('all-chat-rooms', result2);
                             // myIo.emit('all-chat-rooms',result2);
 
                         }
@@ -258,7 +253,7 @@ let setServer = (server) => {
 
         socket.on('edit-chat-room', (data) => {
 
-            redisLib.deleteChatRoomFromHash('chatRooms2', data.oldChatRoom, (err, result) => {
+            redisLib.deleteChatRoomFromHash('chatRooms3', data.oldChatRoom, (err, result) => {
                 if (err) {
                     console.log("Error while deleteing for editing chat room");
                 } else {
@@ -266,13 +261,13 @@ let setServer = (server) => {
                     let key = data.name
                     let value = data.createdBy
 
-                    let setUserOnline = redisLib.setChatRoomInHash("chatRooms2", key, value, (err, result1) => {
+                    let setUserOnline = redisLib.setChatRoomInHash("chatRooms3", key, value, (err, result1) => {
                         if (err) {
                             console.log(`some error occurred`)
                         } else {
                             // getting online users list.
 
-                            redisLib.getChatRoomFromHash('chatRooms2', (err, result2) => {
+                            redisLib.getChatRoomFromHash('chatRooms3', (err, result2) => {
                                 console.log(`--- inside getAllChatRoomInAHash function ---`)
                                 if (err) {
                                     console.log(err)
@@ -284,8 +279,8 @@ let setServer = (server) => {
                                     // socket.room = 'edChat'
                                     // joining chat-group room.
                                     // socket.join(socket.room)
-                        //  socket.emit('all-chat-rooms', result2);
-                        io.sockets.emit('all-chat-rooms',result2);
+                                    //  socket.emit('all-chat-rooms', result2);
+                                    io.sockets.emit('all-chat-rooms', result2);
                                     // myIo.emit('all-chat-rooms',result2);
 
                                 }
@@ -303,13 +298,13 @@ let setServer = (server) => {
             let key = data.nickName
             let value = data.chatRoom
             socket.nickName = data.nickName;
-            let setUserOnline = redisLib.setAUserToChatRoomInHash("currentChatRoom2", key, value, (err, result1) => {
+            let setUserOnline = redisLib.setAUserToChatRoomInHash("currentChatRoom3", key, value, (err, result1) => {
                 if (err) {
                     console.log(`some error occurred`)
                 } else {
                     // getting online users list.
 
-                    redisLib.getAllUserFromChatRoomInHash('currentChatRoom2', (err, result2) => {
+                    redisLib.getAllUserFromChatRoomInHash('currentChatRoom3', (err, result2) => {
                         console.log(`--- inside get user from current chat room function ---`)
                         if (err) {
                             console.log(err)
@@ -317,14 +312,14 @@ let setServer = (server) => {
 
                             console.log(result2)
                             // setting room name
-                         socket.room = value;
+                            socket.room = value;
                             // joining chat-group room.
-                             socket.join(socket.room)
+                            socket.join(socket.room)
                             // client.join(socket.room);
-                          //  socket.join(value)
-            //  socket.emit('all-users-in-paricular-chat-room', result2);
+                            //  socket.join(value)
+                            //  socket.emit('all-users-in-paricular-chat-room', result2);
                             io.sockets.emit('all-users-in-paricular-chat-room', result2);
-                           // socket.emit('all-users-in-paricular-chat-room', result2);
+                            // socket.emit('all-users-in-paricular-chat-room', result2);
                             // myIo.emit('all-chat-rooms',result2);
 
                         }
@@ -335,25 +330,85 @@ let setServer = (server) => {
 
         })
 
-        socket.on('existing-users-in-chat-room', (data) => {
-            console.log("existing-users-in-chat-room event is listening")
 
-            redisLib.getAllUserFromChatRoomInHash('currentChatRoom2', (err, result2) => {
-                console.log(`--- inside get user from current chat room function 2---`)
+
+        socket.on('leave-chat-room', (data) => {
+            
+            redisLib.deleteUserFromChatRoomHash('currentChatRoom3', data)
+            console.log("delete user from chat room");
+            redisLib.getAllUserFromChatRoomInHash('currentChatRoom3', (err, result2) => {
+                console.log(`online users in chat room after leaving....`)
                 if (err) {
                     console.log(err)
                 } else {
 
                     console.log(result2)
-                    // setting room name
-               //  socket.room = data;
-                    // joining chat-group room.
-                    // socket.join(socket.room)
-                  //  socket.join(data)
-                  //  socket.emit('all-users-in-paricular-chat-room', result2);
+
                     io.sockets.emit('all-users-in-paricular-chat-room', result2);
-                   // socket.emit('all-users-in-paricular-chat-room', result2);
-                    // myIo.emit('all-chat-rooms',result2);
+
+
+                }
+            })
+
+        });
+
+
+        socket.on('logout', () => {
+            // disconnect the user from socket
+            // remove the user from online list
+            // unsubscribe the user from his own channel
+
+            console.log("user is disconnected ....");
+            // console.log(socket.connectorName);
+            console.log(socket.userId);
+                    if (socket.userId) {
+                        redisLib.deleteUserFromHash('onlineUsers2', socket.userId)
+                        console.log("delete user");
+                        redisLib.deleteUserFromChatRoomHash('currentChatRoom3', socket.nickName)
+                        console.log("delete user from chat room");
+                        redisLib.getAllUsersInAHash('onlineUsers2', (err, result) => {
+                            if (err) {
+                                console.log(err)
+                            } else {
+                                socket.leave(socket.room)
+                                socket.to(socket.room).broadcast.emit('online-user-list', result);
+
+
+                            }
+                        })
+
+                        redisLib.getAllUserFromChatRoomInHash('currentChatRoom3', (err, result2) => {
+                            console.log(`--- inside get user from current chat room function ---`)
+                            if (err) {
+                                console.log(err)
+                            } else {
+
+                                console.log(result2)
+
+                                io.sockets.emit('all-users-in-paricular-chat-room', result2);
+
+
+                            }
+                        })
+                    }
+                
+          
+
+
+        })
+
+        socket.on('existing-users-in-chat-room', (data) => {
+            console.log("existing-users-in-chat-room event is listening")
+
+            redisLib.getAllUserFromChatRoomInHash('currentChatRoom3', (err, result2) => {
+                if (err) {
+                    console.log(err)
+                } else {
+
+                    console.log(result2)
+                    console.log("getting list of online users in a chat room from backend")
+                    io.sockets.emit('all-users-in-paricular-chat-room', result2);
+
 
                 }
             })
